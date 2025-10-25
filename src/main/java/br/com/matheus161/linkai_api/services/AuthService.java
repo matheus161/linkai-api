@@ -5,6 +5,7 @@ import br.com.matheus161.linkai_api.dto.LoginRequestDto;
 import br.com.matheus161.linkai_api.dto.LoginResponseDto;
 import br.com.matheus161.linkai_api.dto.RegisterRequestDto;
 import br.com.matheus161.linkai_api.dto.RegisterResponseDto;
+import br.com.matheus161.linkai_api.exception.UserAlreadyExistsException;
 import br.com.matheus161.linkai_api.infra.security.TokenService;
 import br.com.matheus161.linkai_api.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class AuthService implements IAuthService {
         Optional<User> existingUser = repository.findByEmail(body.email());
 
         if (existingUser.isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException("User already exists");
         }
 
         String hashedPassword = passwordEncoder.encode(body.password());
