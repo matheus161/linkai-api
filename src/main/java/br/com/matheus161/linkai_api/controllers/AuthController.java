@@ -5,6 +5,7 @@ import br.com.matheus161.linkai_api.dto.LoginResponseDto;
 import br.com.matheus161.linkai_api.dto.RegisterRequestDto;
 import br.com.matheus161.linkai_api.dto.RegisterResponseDto;
 import br.com.matheus161.linkai_api.services.IAuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,21 +22,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginRequestDto body) {
-        try {
-            LoginResponseDto response = service.login(body);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        LoginResponseDto response = service.login(body);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody RegisterRequestDto body) {
-        try {
-            RegisterResponseDto response = service.register(body);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity register(@RequestBody @Valid RegisterRequestDto body) {
+        RegisterResponseDto response = service.register(body);
+        return ResponseEntity.ok(response);
     }
 }
