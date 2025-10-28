@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:16
     container_name: postgres
     environment:
       POSTGRES_DB: linkai_db
@@ -25,12 +25,13 @@ services:
     ports:
       - '5050:5050'
     depends_on:
-      - postgres  # Garante que o postgres suba antes
+      - postgres
     networks:
       - linkai-network
 
 volumes:
   pgdata:
+    name: linkai_pgdata
 
 networks:
   linkai-network:
