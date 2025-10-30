@@ -48,6 +48,6 @@ public class AuthService implements IAuthService {
         repository.save(newUser);
 
         String token = tokenService.generateToken(newUser);
-        return new RegisterResponseDto(newUser.getName(), token);
+        return new RegisterResponseDto(newUser.getEmail(), token);
     }
 }
