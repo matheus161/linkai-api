@@ -3,6 +3,7 @@ package br.com.matheus161.linkai_api.services;
 import br.com.matheus161.linkai_api.domain.user.User;
 import br.com.matheus161.linkai_api.dto.RegisterRequestDto;
 import br.com.matheus161.linkai_api.dto.RegisterResponseDto;
+import br.com.matheus161.linkai_api.exception.UserAlreadyExistsException;
 import br.com.matheus161.linkai_api.infra.security.TokenService;
 import br.com.matheus161.linkai_api.repositories.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class AuthServiceTest {
@@ -80,12 +82,67 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("should throw and Exception when user email already exists")
+    @DisplayName("should throw an Exception when user email already exists")
     void registerCase2() {
+        String email = "matheus@email.com";
+        String name = "Matheus";
+        String password = "Senha@123456";
+
+        User existingUser = new User("existing-id", name, email, "hashedPassword");
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
+
+        // Act
+        RegisterRequestDto request = new RegisterRequestDto(name, email, password);
+
+        UserAlreadyExistsException exception = assertThrows(
+                UserAlreadyExistsException.class,
+                () -> authService.register(request)
+        );
+
+        assertEquals("User already exists", exception.getMessage());
+
+        // Verify if user.save wasn't invoke
+        verify(userRepository, never()).save(any(User.class));
+
+        // Verify if passwordEncoder wasn't invoke
+        verify(passwordEncoder, never()).encode(anyString());
     }
 
     @Test
-    @DisplayName("should throw and Exception when user email already exists")
+    @DisplayName("should throw an Exception when passwordEncoder fails")
     void registerCase3() {
+        String email = "matheus@email.com";
+        String name = "Matheus";
+        String password = "Senha@123456";
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(password)).thenThrow(new RuntimeException());
+
+        RegisterRequestDto request = new RegisterRequestDto(name, email, password);
+
+        assertThrows(RuntimeException.class, () -> authService.register(request));
+
+        verify(userRepository, never()).save(any());
+        verify(tokenService, never()).generateToken(any());
+    }
+
+    @Test
+    @DisplayName("should throw an Exception when generateToken fails")
+    void registerCase4() {
+        String email = "matheus@email.com";
+        String name = "Matheus";
+        String hashedPassword =  "hashedPassword";
+        String password = "Senha@123456";
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(password)).thenReturn(hashedPassword);
+        when(tokenService.generateToken(any(User.class))).thenThrow(new RuntimeException());
+
+        RegisterRequestDto request = new RegisterRequestDto(name, email, password);
+
+        assertThrows(RuntimeException.class, () -> authService.register(request));
+
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(tokenService, times(1)).generateToken(any(User.class));
     }
 }
