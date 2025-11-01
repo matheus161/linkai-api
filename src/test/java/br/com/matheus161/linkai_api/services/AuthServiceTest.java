@@ -1,6 +1,8 @@
 package br.com.matheus161.linkai_api.services;
 
 import br.com.matheus161.linkai_api.domain.user.User;
+import br.com.matheus161.linkai_api.dto.LoginRequestDto;
+import br.com.matheus161.linkai_api.dto.LoginResponseDto;
 import br.com.matheus161.linkai_api.dto.RegisterRequestDto;
 import br.com.matheus161.linkai_api.dto.RegisterResponseDto;
 import br.com.matheus161.linkai_api.exception.UserAlreadyExistsException;
@@ -48,12 +50,8 @@ class AuthServiceTest {
     }
 
     @Test
-    void login() {
-    }
-
-    @Test
     @DisplayName("should create user successfully when everything is ok")
-    void registerCase1() throws Exception {
+    void registerCase1() {
         String email = "matheus@email.com";
         String name = "Matheus";
         String password = "Senha@123456";
@@ -144,5 +142,101 @@ class AuthServiceTest {
 
         verify(userRepository, times(1)).save(any(User.class));
         verify(tokenService, times(1)).generateToken(any(User.class));
+    }
+
+    @Test
+    @DisplayName("should login successfully when everything is ok")
+    void loginCase1() {
+        String email = "matheus@email.com";
+        String name = "Matheus";
+        String password = "Senha@123456";
+        String hashedPassword = "hashedPassword";
+        String token = "token";
+
+        User existingUser = new User("existing-id", name, email, hashedPassword);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.matches(password, hashedPassword)).thenReturn(true);
+        when(tokenService.generateToken(any(User.class))).thenReturn(token);
+
+        // Act
+        LoginRequestDto request = new LoginRequestDto(email, password);
+        LoginResponseDto response = authService.login(request);
+
+        // Assert
+        assertEquals(name, response.name());
+        assertEquals(token, response.token());
+
+        verify(tokenService, times(1)).generateToken(any(User.class));
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(passwordEncoder, times(1)).matches(password, hashedPassword);
+    }
+
+    @Test
+    @DisplayName("should throw an Exception when user not exists")
+    void loginCase2() {
+        String email = "matheus@email.com";
+        String password = "Senha@123456";
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // Act
+        LoginRequestDto request = new LoginRequestDto(email, password);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.login(request));
+
+        assertEquals("User not found", exception.getMessage());
+
+
+        verify(tokenService, never()).generateToken(any());
+        verify(passwordEncoder, never()).encode(anyString());
+    }
+
+    @Test
+    @DisplayName("should throw an Exception when passwords don't match")
+    void loginCase3() {
+        String email = "matheus@email.com";
+        String name = "Matheus";
+        String password = "Senha@123456";
+        String hashedPassword = "hashedPassword";
+
+        User existingUser = new User("existing-id", name, email, hashedPassword);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.matches(password, hashedPassword)).thenReturn(false);
+
+        // Act
+        LoginRequestDto request = new LoginRequestDto(email, password);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.login(request));
+
+        assertEquals("Invalid credentials", exception.getMessage());
+
+
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(tokenService, never()).generateToken(any());
+    }
+
+    @Test
+    @DisplayName("should throw an Exception when generateToken fails")
+    void loginCase4() {
+        String email = "matheus@email.com";
+        String name = "Matheus";
+        String password = "Senha@123456";
+        String hashedPassword = "hashedPassword";
+
+        User existingUser = new User("existing-id", name, email, hashedPassword);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.matches(password, hashedPassword)).thenReturn(true);
+        when(tokenService.generateToken(any(User.class))).thenThrow(new RuntimeException());
+
+        // Act
+        LoginRequestDto request = new LoginRequestDto(email, password);
+
+        assertThrows(RuntimeException.class, () -> authService.login(request));
+
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(passwordEncoder, times(1)).matches(password, hashedPassword);
     }
 }
