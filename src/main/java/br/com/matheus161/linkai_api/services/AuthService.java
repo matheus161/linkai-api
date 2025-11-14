@@ -6,6 +6,7 @@ import br.com.matheus161.linkai_api.dto.LoginResponseDto;
 import br.com.matheus161.linkai_api.dto.RegisterRequestDto;
 import br.com.matheus161.linkai_api.dto.RegisterResponseDto;
 import br.com.matheus161.linkai_api.exception.UserAlreadyExistsException;
+import br.com.matheus161.linkai_api.exception.UserNotFoundException;
 import br.com.matheus161.linkai_api.infra.security.TokenService;
 import br.com.matheus161.linkai_api.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class AuthService implements IAuthService {
     @Override
     public LoginResponseDto login(LoginRequestDto body) {
         User user = repository.findByEmail(body.email())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(body.password(), user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
@@ -48,6 +49,6 @@ public class AuthService implements IAuthService {
         repository.save(newUser);
 
         String token = tokenService.generateToken(newUser);
-        return new RegisterResponseDto(newUser.getName(), token);
+        return new RegisterResponseDto(newUser.getEmail(), token);
     }
 }
