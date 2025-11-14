@@ -1,3 +1,11 @@
 package br.com.matheus161.linkai_api.dto;
 
-public record LoginRequestDto (String email, String password) {}
+import jakarta.validation.constraints.NotNull;
+
+public record LoginRequestDto (
+        @NotNull(message = "O e-mail é obrigatório")
+        String email,
+
+        @NotNull(message = "A senha é obrigatória")
+        String password
+) {}
