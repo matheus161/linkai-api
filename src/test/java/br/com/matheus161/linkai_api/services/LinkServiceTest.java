@@ -79,8 +79,8 @@ public class LinkServiceTest {
         verify(linkRepository, times(1)).save(argThat(link ->
                 link.getTitle().equals(title) &&
                         link.getDescription().equals(description) &&
-                        link.getOriginal_link().equals(original_link) &&
-                        link.getRedirect_id().equals(redirect_id)
+                        link.getOriginalLink().equals(original_link) &&
+                        link.getRedirectId().equals(redirect_id)
         ));
     }
 
@@ -101,7 +101,7 @@ public class LinkServiceTest {
     }
 
     @Test
-    @DisplayName("should throw an Exception when link already exists")
+    @DisplayName("should throw an Exception when link title already exists")
     void createCase3() {
         User user = new User("name", "email", "Senha@123456");
         when(userRepository.findById(user_id)).thenReturn(Optional.of(user));
@@ -122,4 +122,19 @@ public class LinkServiceTest {
         verify(urlIdGeneratorService, never()).generate();
         verify(linkRepository, never()).save(any(Link.class));
     }
+
+    @Test
+    @DisplayName("should throw Exception when original link specifically already exists")
+    void createCase3_LinkExists() {
+        User user = new User("name", "email", "Senha@123456");
+        when(userRepository.findById(user_id)).thenReturn(Optional.of(user));
+
+        Link existingLink = new Link("other title", description, original_link, redirect_id, user);
+        when(linkRepository.findByTitleOrOriginalLink("new title", original_link)).thenReturn(Optional.of(existingLink));
+
+        CreateLinkRequestDto request = new CreateLinkRequestDto("new title", description, original_link, user_id);
+
+        assertThrows(LinkAlreadyExistsException.class, () -> linkService.create(request));
+    }
+
 }

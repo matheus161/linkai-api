@@ -25,11 +25,11 @@ public class Link {
 
     private String description;
 
-    @Column(nullable = false)
-    private String original_link;
+    @Column(name = "original_link", nullable = false)
+    private String originalLink;
 
-    @Column(unique = true)
-    private String redirect_id;
+    @Column(name = "redirect_id", unique = true)
+    private String redirectId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id",  nullable = false)
@@ -38,8 +38,8 @@ public class Link {
     public Link(String title, String description, String original_link, String redirect_id, User user) {
         this.title = title;
         this.description = description;
-        this.original_link = original_link;
-        this.redirect_id = redirect_id;
+        this.originalLink = original_link;
+        this.redirectId = redirect_id;
         this.user = user;
     }
 }

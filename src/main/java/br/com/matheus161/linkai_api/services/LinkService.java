@@ -39,8 +39,8 @@ public class LinkService implements ILinkService {
         return new CreateLinkResponseDto(
                 newLink.getTitle(),
                 newLink.getDescription(),
-                newLink.getOriginal_link(),
-                newLink.getRedirect_id());
+                newLink.getOriginalLink(),
+                newLink.getRedirectId());
     }
 
 }
