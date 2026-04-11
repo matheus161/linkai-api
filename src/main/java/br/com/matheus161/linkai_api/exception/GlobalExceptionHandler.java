@@ -58,7 +58,29 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleUserNotFoun(UserNotFoundException ex) {
+    public ResponseEntity<ErrorResponseDto> handleUserNotFound(UserNotFoundException ex) {
+        ErrorResponseDto error = new ErrorResponseDto(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                null,
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(LinkAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponseDto> handleLinkAlreadyExists(LinkAlreadyExistsException ex) {
+        ErrorResponseDto error = new ErrorResponseDto(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                null,
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(LinkNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleLinkNotFound(LinkNotFoundException ex) {
         ErrorResponseDto error = new ErrorResponseDto(
                 HttpStatus.NOT_FOUND.value(),
                 ex.getMessage(),
