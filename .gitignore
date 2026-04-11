@@ -31,11 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-### ENV ###
-# Ignore standard dotenv files and common variants
-.env
-.env.*
-*.env
-*.env.*
-.envrc
