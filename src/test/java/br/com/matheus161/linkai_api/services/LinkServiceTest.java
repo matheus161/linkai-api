@@ -5,6 +5,7 @@ import br.com.matheus161.linkai_api.domain.user.User;
 import br.com.matheus161.linkai_api.dto.CreateLinkRequestDto;
 import br.com.matheus161.linkai_api.dto.CreateLinkResponseDto;
 import br.com.matheus161.linkai_api.exception.LinkAlreadyExistsException;
+import br.com.matheus161.linkai_api.exception.LinkNotFoundException;
 import br.com.matheus161.linkai_api.exception.UserNotFoundException;
 import br.com.matheus161.linkai_api.infra.security.UrlIdGeneratorService;
 import br.com.matheus161.linkai_api.repositories.LinkRepository;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
@@ -63,12 +65,9 @@ public class LinkServiceTest {
         when(linkRepository.findByOriginalLinkAndUserId(title, original_link)).thenReturn(Optional.empty());
         when(urlIdGeneratorService.generate()).thenReturn(redirect_id);
 
-
         // Act
         CreateLinkRequestDto request = new CreateLinkRequestDto(title, description, original_link);
         CreateLinkResponseDto response = linkService.create(request, user_id);
-
-        System.out.println(response);
 
         // Assert
         assertEquals(title, response.title());
@@ -137,4 +136,38 @@ public class LinkServiceTest {
         assertThrows(LinkAlreadyExistsException.class, () -> linkService.create(request, user_id));
     }
 
+    // New tests for findOriginalLink
+    @Test
+    @DisplayName("should return original link when redirectId exists")
+    void findOriginalLink_case1_success() {
+        // Arrange
+        String redirectId = redirect_id;
+        String expectedOriginal = original_link;
+        User user = new User("name", "email", "Senha@123456");
+        Link link = new Link(title, description, expectedOriginal, redirectId, user);
+        when(linkRepository.findLinkByRedirectId(redirectId)).thenReturn(Optional.of(link));
+
+        // Act
+        String result = linkService.findOriginalLink(redirectId);
+
+        // Assert
+        assertEquals(expectedOriginal, result);
+        verify(linkRepository, times(1)).findLinkByRedirectId(redirectId);
+        verifyNoMoreInteractions(linkRepository);
+    }
+
+    @Test
+    @DisplayName("should throw LinkNotFoundException when redirectId does not exist")
+    void findOriginalLink_case2_notFound() {
+        // Arrange
+        String redirectId = redirect_id;
+        when(linkRepository.findLinkByRedirectId(redirectId)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        LinkNotFoundException ex = assertThrows(LinkNotFoundException.class,
+                () -> linkService.findOriginalLink(redirectId));
+        assertEquals("Link not found", ex.getMessage());
+        verify(linkRepository, times(1)).findLinkByRedirectId(redirectId);
+        verifyNoMoreInteractions(linkRepository);
+    }
 }

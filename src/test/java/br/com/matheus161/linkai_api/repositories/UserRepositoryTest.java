@@ -3,6 +3,7 @@ package br.com.matheus161.linkai_api.repositories;
 import br.com.matheus161.linkai_api.domain.user.User;
 import br.com.matheus161.linkai_api.dto.RegisterRequestDto;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,11 @@ class UserRepositoryTest {
 
     @Autowired
     EntityManager entityManager;
+
+    @AfterEach
+    void cleanDatabase() {
+        userRepository.deleteAllInBatch();
+    }
 
     @Test
     @DisplayName("Should get user successfully from DB")

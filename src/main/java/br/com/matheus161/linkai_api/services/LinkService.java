@@ -5,6 +5,7 @@ import br.com.matheus161.linkai_api.domain.user.User;
 import br.com.matheus161.linkai_api.dto.CreateLinkRequestDto;
 import br.com.matheus161.linkai_api.dto.CreateLinkResponseDto;
 import br.com.matheus161.linkai_api.exception.LinkAlreadyExistsException;
+import br.com.matheus161.linkai_api.exception.LinkNotFoundException;
 import br.com.matheus161.linkai_api.exception.UserNotFoundException;
 import br.com.matheus161.linkai_api.infra.security.UrlIdGeneratorService;
 import br.com.matheus161.linkai_api.repositories.LinkRepository;
@@ -41,6 +42,14 @@ public class LinkService implements ILinkService {
                 newLink.getDescription(),
                 newLink.getOriginalLink(),
                 newLink.getRedirectId());
+    }
+
+    @Override
+    public String findOriginalLink(String redirectId) {
+        Link existingLink = linkRepository.findLinkByRedirectId(redirectId)
+                .orElseThrow(() -> new LinkNotFoundException("Link not found"));
+
+        return existingLink.getOriginalLink();
     }
 
 }

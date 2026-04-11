@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface LinkRepository extends JpaRepository<Link, UUID> {
     Optional<Link> findByOriginalLinkAndUserId(String originalLink, String userId);
+    Optional<Link> findLinkByRedirectId(String redirectId);
 }
