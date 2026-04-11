@@ -7,5 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface LinkRepository extends JpaRepository<Link, UUID> {
-    Optional<Link> findByTitleOrOriginalLink(String title, String originalLink);
+    Optional<Link> findByOriginalLinkAndUserId(String originalLink, String userId);
 }

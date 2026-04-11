@@ -23,11 +23,11 @@ public class LinkService implements ILinkService {
 
 
     @Override
-    public CreateLinkResponseDto create(CreateLinkRequestDto body) {
-        User existingUser = userRepository.findById(body.user_id())
+    public CreateLinkResponseDto create(CreateLinkRequestDto body, String userId) {
+        User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Optional<Link> existingLink = linkRepository.findByTitleOrOriginalLink(body.title(), body.original_link());
+        Optional<Link> existingLink = linkRepository.findByOriginalLinkAndUserId(body.title(), body.original_link());
         if (existingLink.isPresent()) {
             throw new LinkAlreadyExistsException("Link already exists");
         }

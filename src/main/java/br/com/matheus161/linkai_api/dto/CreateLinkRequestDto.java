@@ -12,8 +12,5 @@ public record CreateLinkRequestDto(
         String description,
 
         @NotNull(message = "O link é obrigatório")
-        String original_link,
-
-        @NotNull(message = "O usuário é obrigatório")
-        String user_id
+        String original_link
 ) {}

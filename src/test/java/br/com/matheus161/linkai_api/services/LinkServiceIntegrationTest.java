@@ -1,6 +1,5 @@
 package br.com.matheus161.linkai_api.services;
 
-import br.com.matheus161.linkai_api.domain.user.User;
 import br.com.matheus161.linkai_api.dto.CreateLinkRequestDto;
 import br.com.matheus161.linkai_api.infra.security.UrlIdGeneratorService;
 import br.com.matheus161.linkai_api.repositories.LinkRepository;
@@ -51,10 +50,9 @@ public class LinkServiceIntegrationTest extends BaseIntegrationTest {
     void createCase1() throws Exception {
         String email = "teste@email.com";
         String token = registerAndGetToken("Teste", email, "Senha@123");
-        User user = getUserByEmail(email);
 
         CreateLinkRequestDto requestBody = new CreateLinkRequestDto("Link", "description",
-                "original_link", user.getId());
+                "original_link");
         mockMvc.perform(post("/link")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)

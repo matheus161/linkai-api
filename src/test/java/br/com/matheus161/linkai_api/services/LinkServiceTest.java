@@ -60,13 +60,13 @@ public class LinkServiceTest {
     void createCase1() {
         User user = new User("name", "email", "Senha@123456");
         when(userRepository.findById(user_id)).thenReturn(Optional.of(user));
-        when(linkRepository.findByTitleOrOriginalLink(title, original_link)).thenReturn(Optional.empty());
+        when(linkRepository.findByOriginalLinkAndUserId(title, original_link)).thenReturn(Optional.empty());
         when(urlIdGeneratorService.generate()).thenReturn(redirect_id);
 
 
         // Act
-        CreateLinkRequestDto request = new CreateLinkRequestDto(title, description, original_link, user_id);
-        CreateLinkResponseDto response = linkService.create(request);
+        CreateLinkRequestDto request = new CreateLinkRequestDto(title, description, original_link);
+        CreateLinkResponseDto response = linkService.create(request, user_id);
 
         System.out.println(response);
 
@@ -90,12 +90,12 @@ public class LinkServiceTest {
         when(userRepository.findById(user_id)).thenReturn(Optional.empty());
 
         // Act
-        CreateLinkRequestDto request = new CreateLinkRequestDto(title, description, original_link, user_id);
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> linkService.create(request));
+        CreateLinkRequestDto request = new CreateLinkRequestDto(title, description, original_link);
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> linkService.create(request, user_id));
 
         assertEquals("User not found", exception.getMessage());
 
-        verify(linkRepository, never()).findByTitleOrOriginalLink(anyString(), anyString());
+        verify(linkRepository, never()).findByOriginalLinkAndUserId(anyString(), anyString());
         verify(urlIdGeneratorService, never()).generate();
         verify(linkRepository, never()).save(any(Link.class));
     }
@@ -107,18 +107,18 @@ public class LinkServiceTest {
         when(userRepository.findById(user_id)).thenReturn(Optional.of(user));
 
         Link link = new Link(title, description, original_link, redirect_id, user);
-        when(linkRepository.findByTitleOrOriginalLink(title, original_link)).thenReturn(Optional.of(link));
+        when(linkRepository.findByOriginalLinkAndUserId(title, original_link)).thenReturn(Optional.of(link));
 
         // Act
-        CreateLinkRequestDto request = new CreateLinkRequestDto(title, description, original_link, user_id);
+        CreateLinkRequestDto request = new CreateLinkRequestDto(title, description, original_link);
 
         LinkAlreadyExistsException exception = assertThrows(LinkAlreadyExistsException.class,
-                () -> linkService.create(request));
+                () -> linkService.create(request, user_id));
 
         assertEquals("Link already exists", exception.getMessage());
 
         verify(userRepository, times(1)).findById(user_id);
-        verify(linkRepository, times(1)).findByTitleOrOriginalLink(anyString(), anyString());
+        verify(linkRepository, times(1)).findByOriginalLinkAndUserId(anyString(), anyString());
         verify(urlIdGeneratorService, never()).generate();
         verify(linkRepository, never()).save(any(Link.class));
     }
@@ -130,11 +130,11 @@ public class LinkServiceTest {
         when(userRepository.findById(user_id)).thenReturn(Optional.of(user));
 
         Link existingLink = new Link("other title", description, original_link, redirect_id, user);
-        when(linkRepository.findByTitleOrOriginalLink("new title", original_link)).thenReturn(Optional.of(existingLink));
+        when(linkRepository.findByOriginalLinkAndUserId("new title", original_link)).thenReturn(Optional.of(existingLink));
 
-        CreateLinkRequestDto request = new CreateLinkRequestDto("new title", description, original_link, user_id);
+        CreateLinkRequestDto request = new CreateLinkRequestDto("new title", description, original_link);
 
-        assertThrows(LinkAlreadyExistsException.class, () -> linkService.create(request));
+        assertThrows(LinkAlreadyExistsException.class, () -> linkService.create(request, user_id));
     }
 
 }

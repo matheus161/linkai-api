@@ -29,14 +29,14 @@ public class LinkRepositoryTest {
     final String redirect_id = "redirect-id";
 
     @Test
-    @DisplayName("Should get link by title or original link successfully from DB")
-    void findByTitleOrOriginalLinkSuccess() {
+    @DisplayName("Should get link original link and user successfully from DB")
+    void findByOriginalLinkAndUserIdSuccess() {
         User user = createUser();
 
-        CreateLinkRequestDto data = new CreateLinkRequestDto(title, description, original_link, user.getId());
+        CreateLinkRequestDto data = new CreateLinkRequestDto(title, description, original_link);
         createLink(data, user);
 
-        Optional<Link> existingLink = linkRepository.findByTitleOrOriginalLink(title, original_link);
+        Optional<Link> existingLink = linkRepository.findByOriginalLinkAndUserId(original_link, user.getId());
 
         assertThat(existingLink).isPresent();
         assertThat(existingLink.get().getTitle()).isEqualTo(title);

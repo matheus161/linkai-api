@@ -2,6 +2,7 @@ package br.com.matheus161.linkai_api.controllers;
 
 import br.com.matheus161.linkai_api.dto.CreateLinkRequestDto;
 import br.com.matheus161.linkai_api.dto.CreateLinkResponseDto;
+import br.com.matheus161.linkai_api.infra.security.CurrentUserId;
 import br.com.matheus161.linkai_api.services.ILinkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +17,9 @@ public class LinkController {
 
 
     @PostMapping
-    public ResponseEntity<CreateLinkResponseDto> create(@RequestBody @Valid CreateLinkRequestDto body) {
-        CreateLinkResponseDto response = service.create(body);
+    public ResponseEntity<CreateLinkResponseDto> create(@RequestBody @Valid CreateLinkRequestDto body,
+                                                        @CurrentUserId String userId) {
+        CreateLinkResponseDto response = service.create(body, userId);
         return ResponseEntity.ok(response);
     }
 }
